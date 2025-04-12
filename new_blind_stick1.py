@@ -15,17 +15,18 @@ import speech_recognition as sr
 import pyttsx3
 
 # OpenRouteService API Key
-API_KEY = "5b3ce3597851110001cf6248bf743466e00c4aba801900966be2f7fb"
+#API_KEY = "give api key here"
+#removed due to privacy issues.
 
 # Serial Configuration
 ser = serial.Serial('/dev/serial0', 9600, timeout=1)
 time.sleep(2)
 
 # Email & SMS Configuration
-SENDER_EMAIL = "amaljosek2812@gmail.com"
-RECEIVER_EMAILS = ["amaljosek2812@gmail.com", "tinuevolve@gmail.com", "evolvenithin.kochi@gmail.com"]
-EMAIL_PASSWORD = "cisj usty axrf dlla"
-PHONE_NUMBERS = ["+916238041785", "+919074080481","+919188030428"]
+SENDER_EMAIL = "senderemail@gmail.com"
+RECEIVER_EMAILS = ["recieveremail@gmail.com"]
+EMAIL_PASSWORD = "not the mail password use the app password"
+PHONE_NUMBERS = ["list of phone numbers with country code"]
 
 # GPIO Pins
 TRIG, ECHO, BUZZER, BUTTON_PIN, NAV_BUTTON = 23, 24, 25, 17, 27
@@ -47,18 +48,18 @@ navigation_thread = None
 engine = pyttsx3.init()
 engine.setProperty('rate', 150)
 
-# 📍 Function to fetch current location
+#  Function to fetch current location
 def get_current_location():
     try:
         response = requests.get("https://ipinfo.io/json").json()
         lat, lon = map(float, response["loc"].split(","))
-        print(f"✅ Current Location: {lat}, {lon}")
+        print(f" Current Location: {lat}, {lon}")
         return lat, lon
     except Exception as e:
         print("Failed to get current location:", e)
         return None, None
 
-# 🔍 Function to get coordinates from destination name
+#  Function to get coordinates from destination name
 def get_coordinates(place_name):
     geolocator = Nominatim(user_agent="geoapi")
     location = geolocator.geocode(place_name)
@@ -67,7 +68,7 @@ def get_coordinates(place_name):
     else:
         raise ValueError("Location not found!")
 
-# 🚦 Function to get directions
+#  Function to get directions
 def get_directions(start, end):
     url = "https://api.openrouteservice.org/v2/directions/foot-walking/geojson"
     headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
@@ -87,24 +88,24 @@ def get_directions(start, end):
         print(f"Failed to get directions: {response.status_code} - {response.text}")
         return None
 
-# 🎤 Function to recognize voice input for destination
+# Function to recognize voice input for destination
 def recognize_speech():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
-        print("🎤 Speak your destination...")
+        print("Speak your destination...")
         try:
             audio = recognizer.listen(source, timeout=5)
             destination = recognizer.recognize_google(audio)
-            print(f"🗺️ Destination: {destination}")
+            print(f"Destination: {destination}")
             return destination
         except sr.UnknownValueError:
-            print("❌ Could not understand the audio.")
+            print("Could not understand the audio.")
             return None
         except sr.RequestError:
-            print("❌ Failed to connect to Google API.")
+            print("Failed to connect to Google API.")
             return None
 
-# 🔊 TTS Functions
+# TTS Functions
 def speak(text):
     global stop_navigation
     if stop_navigation:
@@ -121,7 +122,7 @@ def speak(text):
 def stop_speaking():
     engine.stop()
 
-# 🚗 Navigation Process
+# Navigation Process
 def navigation_process():
     global stop_navigation
 
@@ -167,7 +168,7 @@ def navigation_process():
         instruction = step["instruction"]
         speak(instruction)
 
-# 🚦 Navigation Control
+# Navigation Control
 def navigation():
     global navigation_mode, stop_navigation, navigation_thread
 
@@ -182,12 +183,12 @@ def navigation():
                 print(f"Navigation mode toggled to: {navigation_mode}")
 
                 if navigation_mode:
-                    print("🟢 Navigation mode ON")
+                    print(" Navigation mode ON")
                     stop_navigation = False
                     navigation_thread = threading.Thread(target=navigation_process)
                     navigation_thread.start()
                 else:
-                    print("🔴 Navigation mode OFF")
+                    print(" Navigation mode OFF")
                     stop_navigation = True
                     stop_speaking()
                     if navigation_thread and navigation_thread.is_alive():
@@ -206,7 +207,7 @@ def navigation():
     finally:
         GPIO.cleanup()
 
-# 📩 Send SMS
+# Send SMS
 def send_sms():
     message = "Help needed! This is an urgent alert from the Blind Stick system. Please assist immediately."
     try:
@@ -222,7 +223,7 @@ def send_sms():
     except Exception as e:
         print(f"Failed to send SMS: {e}")
 
-# 📧 Send Email
+#  Send Email
 def send_email():
     subject = "Help Needed"
     body = "This is an urgent alert from the Blind Stick system. Please assist immediately."
@@ -242,20 +243,20 @@ def send_email():
     except Exception as e:
         print(f"Failed to send email: {e}")
 
-# 🚨 Monitor Help Button
+# Monitor Help Button
 def monitor_button():
     last_state = GPIO.LOW
     while True:
         current_state = GPIO.input(BUTTON_PIN)
         if current_state == GPIO.HIGH and last_state == GPIO.LOW:
-            print("🚨 Help button pressed! Sending alerts.")
+            print(" Help button pressed! Sending alerts.")
             send_sms()
             send_email()
             time.sleep(1)  # Debounce
         last_state = current_state
         time.sleep(0.1)
 
-# 🔊 Ultrasonic Distance and Buzzer
+# Ultrasonic Distance and Buzzer
 def get_distance():
     GPIO.output(TRIG, True)
     time.sleep(0.00001)
@@ -305,7 +306,7 @@ def ultrasonic_buzzer():
 
         time.sleep(0.1)
 
-# 🎥 Object Detection
+# Object Detection
 AUDIO_FOLDER = 'audio/'
 os.makedirs(AUDIO_FOLDER, exist_ok=True)
 detector = YOLOv11()
@@ -356,7 +357,7 @@ def start_detection():
     vs.stop()
 
 
-# 🛠️ Main Execution
+#  Main Execution
 if __name__ == '__main__':
     print("Starting Blind Stick System...")
     threading.Thread(target=start_detection, daemon=True).start()
